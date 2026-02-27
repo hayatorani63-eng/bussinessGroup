@@ -30,23 +30,30 @@ function ScenarioContent() {
     useEffect(() => {
         if (!id || !scenarioId) return;
 
-        const fetchData = async () => {
-            const allScenarios = await getScenarios(id);
-            const current = allScenarios.find((s) => s.id === scenarioId);
+        // Real-time scenario listener
+        const unsubscribeScenario = subscribeToSingleScenario(scenarioId, (current) => {
             if (current) {
                 setScenario(current);
-                setEditTitle(current.title);
-                setEditContent(current.content);
-                setEditUrl(current.url || "");
-                setEditStatus(current.status || 'writing');
+                // Only update edit states if not currently editing to avoid jumping cursor
+                if (!isEditing) {
+                    setEditTitle(current.title);
+                    setEditContent(current.content);
+                    setEditUrl(current.url || "");
+                    setEditStatus(current.status || 'writing');
+                }
             }
+        });
 
-            const allComments = await getComments(scenarioId);
+        // Real-time comments listener
+        const unsubscribeComments = subscribeToComments(scenarioId, (allComments) => {
             setComments(allComments);
-        };
+        });
 
-        fetchData();
-    }, [id, scenarioId]);
+        return () => {
+            unsubscribeScenario();
+            unsubscribeComments();
+        };
+    }, [id, scenarioId, isEditing]);
 
     const handleAddComment = async (e: React.FormEvent) => {
         e.preventDefault();
