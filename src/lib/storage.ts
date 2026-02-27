@@ -30,6 +30,22 @@ export const addBusiness = async (name: string): Promise<Business> => {
     return { id: docRef.id, name };
 };
 
+export const updateBusiness = async (id: string, name: string): Promise<Business | null> => {
+    const docRef = doc(db, "businesses", id);
+    await updateDoc(docRef, { name });
+    return { id, name };
+};
+
+export const deleteBusiness = async (id: string): Promise<boolean> => {
+    try {
+        await deleteDoc(doc(db, "businesses", id));
+        return true;
+    } catch (e) {
+        console.error("Error deleting business: ", e);
+        return false;
+    }
+};
+
 export const getScenarios = async (businessId?: string): Promise<Scenario[]> => {
     try {
         const scenariosRef = collection(db, "scenarios");
