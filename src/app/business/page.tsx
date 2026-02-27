@@ -1,0 +1,228 @@
+"use client";
+
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { getBusinesses, getScenarios, addScenario, toggleScenarioConfirmation, updateScenario, getComments } from "@/lib/storage";
+import { Business, Scenario, Comment } from "@/types";
+import { formatDate } from "@/lib/utils";
+
+function BusinessContent() {
+    const searchParams = useSearchParams();
+    const id = searchParams.get("id");
+
+    const [business, setBusiness] = useState<Business | null>(null);
+    const [scenarios, setScenarios] = useState<Scenario[]>([]);
+    const [allComments, setAllComments] = useState<Comment[]>([]);
+    const [newTitle, setNewTitle] = useState("");
+    const [newContent, setNewContent] = useState("");
+    const [newUrl, setNewUrl] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isAdding, setIsAdding] = useState(false);
+
+    useEffect(() => {
+        if (!id) return;
+
+        const businesses = getBusinesses();
+        const b = businesses.find((bus) => bus.id === id);
+        setBusiness(b || null);
+
+        const allScenarios = getScenarios();
+        const filtered = allScenarios.filter((s) => s.businessId === id);
+        // Sort by date descending
+        const sorted = [...filtered].sort((a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setScenarios(sorted);
+
+        setAllComments(getComments());
+    }, [id]);
+
+    const handleAddScenario = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newTitle.trim() || !newContent.trim() || !id) return;
+        const s = addScenario(id, newTitle, newContent, newUrl);
+        setScenarios([s, ...scenarios]);
+        setNewTitle("");
+        setNewContent("");
+        setNewUrl("");
+        setIsAdding(false);
+    };
+
+    const handleToggleConfirmation = (e: React.MouseEvent | React.ChangeEvent, scenarioId: string) => {
+        e.stopPropagation();
+        const updated = toggleScenarioConfirmation(scenarioId);
+        if (updated) {
+            setScenarios(prev => prev.map(s => s.id === scenarioId ? updated : s));
+        }
+    };
+
+    const filteredScenarios = scenarios.filter(s =>
+        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.content.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'writing': return { bg: '#444', color: '#ccc' };
+            case 'filmed': return { bg: 'rgba(255, 171, 0, 0.2)', color: '#ffab00' };
+            case 'published': return { bg: 'rgba(0, 200, 83, 0.2)', color: '#00c853' };
+            default: return { bg: '#444', color: '#ccc' };
+        }
+    };
+
+    if (!id || !business) {
+        return (
+            <div className="container" style={{ textAlign: 'center', paddingTop: '5rem' }}>
+                <p className="muted">事業データを読み込んでいます...</p>
+                <Link href="/" className="muted" style={{ textDecoration: 'underline' }}>トップへ戻る</Link>
+            </div>
+        );
+    }
+
+    return (
+        <main className="container fade-in">
+            <header className="page-header" style={{ marginBottom: '2rem' }}>
+                <Link href="/" className="muted" style={{ marginBottom: '1rem', display: 'inline-block' }}>← 事業一覧へ戻る</Link>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className="flex-responsive">
+                    <h1 style={{ fontSize: '2rem' }}>{business.name}</h1>
+                </div>
+            </header>
+
+            <section style={{ marginBottom: '3rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }} className="flex-responsive">
+                    <h2 style={{ fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>シナリオ一覧</h2>
+                    <button onClick={() => setIsAdding(!isAdding)} style={{ background: 'transparent', color: 'var(--accent)', border: '1px solid var(--accent)', padding: '0.4rem 1rem', fontSize: '0.8rem' }}>
+                        {isAdding ? 'キャンセル' : '新規作成'}
+                    </button>
+                </div>
+
+                <div style={{ marginBottom: '2rem' }}>
+                    <input
+                        type="text"
+                        placeholder="キーワードで検索 (タイトル・本文)..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '30px', border: '1px solid var(--border)', background: 'var(--surface)' }}
+                    />
+                </div>
+
+                {isAdding && (
+                    <div className="card fade-in" style={{ marginBottom: '2rem' }}>
+                        <form onSubmit={handleAddScenario} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <input
+                                type="text"
+                                placeholder="シナリオのタイトル"
+                                value={newTitle}
+                                onChange={(e) => setNewTitle(e.target.value)}
+                            />
+                            <textarea
+                                placeholder="本文を入力..."
+                                rows={5}
+                                value={newContent}
+                                onChange={(e) => setNewContent(e.target.value)}
+                                style={{ resize: 'vertical' }}
+                            />
+                            <input
+                                type="url"
+                                placeholder="参考リンク (URL) - 任意"
+                                value={newUrl}
+                                onChange={(e) => setNewUrl(e.target.value)}
+                                style={{ fontSize: '0.9rem' }}
+                            />
+                            <button type="submit">保存する</button>
+                        </form>
+                    </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    {filteredScenarios.map((s) => {
+                        return (
+                            <Link href={`/business/scenario?id=${id}&scenarioId=${s.id}`} key={s.id} className="card" style={{ display: 'block', textDecoration: 'none', opacity: s.confirmed ? 0.6 : 1, padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', alignItems: 'flex-start' }}>
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                                        <div
+                                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
+                                            onMouseDown={(e) => { e.stopPropagation(); }}
+                                            style={{ display: 'flex', alignItems: 'center', marginTop: '0.3rem' }}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={!!s.confirmed}
+                                                onChange={(e) => handleToggleConfirmation(e, s.id)}
+                                                style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.3rem' }}>
+                                                <div
+                                                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
+                                                    onMouseDown={(e) => { e.stopPropagation(); }}
+                                                    style={{ position: 'relative', zIndex: 10 }}
+                                                >
+                                                    <select
+                                                        value={s.status || 'writing'}
+                                                        onChange={(e) => {
+                                                            e.stopPropagation();
+                                                            const newStatus = e.target.value as any;
+                                                            const updated = updateScenario(s.id, { status: newStatus });
+                                                            if (updated) {
+                                                                setScenarios(prev => prev.map(item => item.id === s.id ? updated : item));
+                                                            }
+                                                        }}
+                                                        style={{
+                                                            fontSize: '0.75rem',
+                                                            padding: '4px 12px',
+                                                            borderRadius: '6px',
+                                                            backgroundColor: getStatusColor(s.status || 'writing').bg,
+                                                            color: getStatusColor(s.status || 'writing').color,
+                                                            border: '1px solid currentColor',
+                                                            fontWeight: 600,
+                                                            cursor: 'pointer',
+                                                            outline: 'none',
+                                                            appearance: 'auto',
+                                                        }}
+                                                    >
+                                                        <option value="writing">執筆中</option>
+                                                        <option value="filmed">撮影可能</option>
+                                                        <option value="published">投稿済み</option>
+                                                    </select>
+                                                </div>
+                                                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 500, textDecoration: s.confirmed ? 'line-through' : 'none', letterSpacing: '0.02em' }}>{s.title}</h3>
+                                            </div>
+                                            <span className="muted" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{formatDate(s.createdAt)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="no-mobile" style={{ textAlign: 'right' }}>
+                                        {s.url && (
+                                            <span style={{ fontSize: '0.7rem', color: 'var(--accent)', opacity: 0.8, display: 'block', marginBottom: '0.2rem' }}>🔗 {new URL(s.url).hostname}</span>
+                                        )}
+                                        {allComments.filter((c: Comment) => c.scenarioId === s.id).length > 0 && (
+                                            <span style={{ fontSize: '0.7rem', color: '#888' }}>💬 {allComments.filter((c: Comment) => c.scenarioId === s.id).length} comments</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <p className="text-clamp" style={{ whiteSpace: 'pre-wrap', color: '#aaa', textDecoration: s.confirmed ? 'line-through' : 'none', fontSize: '0.95rem', lineHeight: '1.6', margin: '0.5rem 0 0 0' }}>
+                                    {s.content}
+                                </p>
+                            </Link>
+                        );
+                    })}
+                    {filteredScenarios.length === 0 && !isAdding && (
+                        <div className="muted" style={{ textAlign: 'center', padding: '3rem', border: '1px dashed var(--border)', borderRadius: '8px' }}>
+                            {searchQuery ? 'キーワードに一致するシナリオがありません' : 'シナリオがありません'}
+                        </div>
+                    )}
+                </div>
+            </section>
+        </main>
+    );
+}
+
+export default function BusinessPage() {
+    return (
+        <Suspense fallback={<div className="container" style={{ textAlign: 'center', paddingTop: '5rem' }}><p className="muted">読み込み中...</p></div>}>
+            <BusinessContent />
+        </Suspense>
+    );
+}
