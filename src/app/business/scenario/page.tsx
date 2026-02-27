@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { getScenarios, updateScenario, getComments, addComment, updateComment, deleteComment } from "@/lib/storage";
+import { getScenarios, updateScenario, getComments, addComment, updateComment, deleteComment, subscribeToSingleScenario, subscribeToComments } from "@/lib/storage";
 import { Scenario, Comment } from "@/types";
 import { formatDate } from "@/lib/utils";
 
@@ -51,42 +51,32 @@ function ScenarioContent() {
     const handleAddComment = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newComment.trim() || !authorName.trim() || !scenarioId) return;
-        const c = await addComment(scenarioId, authorName, newComment);
-        setComments(prev => [...prev, c]);
+        await addComment(scenarioId, authorName, newComment);
         setNewComment("");
     };
 
     const handleUpdateComment = async (commentId: string) => {
         if (!editCommentText.trim()) return;
-        const updated = await updateComment(commentId, editCommentText);
-        if (updated) {
-            setComments(prev => prev.map(c => c.id === commentId ? updated : c));
-            setEditingCommentId(null);
-            setEditCommentText("");
-        }
+        await updateComment(commentId, editCommentText);
+        setEditingCommentId(null);
+        setEditCommentText("");
     };
 
     const handleDeleteComment = async (commentId: string) => {
         if (confirm("コメントを削除してもよろしいですか？")) {
-            const success = await deleteComment(commentId);
-            if (success) {
-                setComments(prev => prev.filter(c => c.id !== commentId));
-            }
+            await deleteComment(commentId);
         }
     };
 
     const handleSave = async () => {
         if (!editTitle.trim() || !editContent.trim() || !scenarioId) return;
-        const updated = await updateScenario(scenarioId, {
+        await updateScenario(scenarioId, {
             title: editTitle,
             content: editContent,
             url: editUrl,
             status: editStatus
         });
-        if (updated) {
-            setScenario(updated);
-            setIsEditing(false);
-        }
+        setIsEditing(false);
     };
 
     const handleCancel = () => {

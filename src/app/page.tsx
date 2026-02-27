@@ -1,9 +1,9 @@
 "use client";
 
+import { getBusinesses, addBusiness, updateBusiness, deleteBusiness, migrateLocalStorageToFirestore } from "@/lib/storage";
+import { Business } from "@/types";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getBusinesses, addBusiness, updateBusiness, deleteBusiness } from "@/lib/storage";
-import { Business } from "@/types";
 
 export default function Home() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -12,11 +12,12 @@ export default function Home() {
   const [editingName, setEditingName] = useState("");
 
   useEffect(() => {
-    const fetchBusinesses = async () => {
+    const init = async () => {
+      await migrateLocalStorageToFirestore();
       const data = await getBusinesses();
       setBusinesses(data);
     };
-    fetchBusinesses();
+    init();
   }, []);
 
   const handleAddBusiness = async (e: React.FormEvent) => {

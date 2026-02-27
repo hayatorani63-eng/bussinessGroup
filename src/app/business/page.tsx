@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { getBusinesses, getScenarios, addScenario, toggleScenarioConfirmation, updateScenario, getComments } from "@/lib/storage";
+import { getBusinesses, getScenarios, addScenario, toggleScenarioConfirmation, updateScenario, getComments, subscribeToScenarios } from "@/lib/storage";
 import { Business, Scenario, Comment } from "@/types";
 import { formatDate } from "@/lib/utils";
 
@@ -23,26 +23,29 @@ function BusinessContent() {
     useEffect(() => {
         if (!id) return;
 
-        const fetchData = async () => {
+        const fetchInit = async () => {
             const businesses = await getBusinesses();
             const b = businesses.find((bus) => bus.id === id);
             setBusiness(b || null);
 
-            const filteredScenarios = await getScenarios(id);
-            setScenarios(filteredScenarios);
-
             const comments = await getComments();
             setAllComments(comments);
         };
+        fetchInit();
 
-        fetchData();
+        // Real-time scenarios listener
+        const unsubscribe = subscribeToScenarios(id, (updatedScenarios) => {
+            setScenarios(updatedScenarios);
+        });
+
+        return () => unsubscribe();
     }, [id]);
 
     const handleAddScenario = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newTitle.trim() || !newContent.trim() || !id) return;
-        const s = await addScenario(id, newTitle, newContent, newUrl);
-        setScenarios(prev => [s, ...prev]);
+        await addScenario(id, newTitle, newContent, newUrl);
+        // Scenarios will be updated via onSnapshot
         setNewTitle("");
         setNewContent("");
         setNewUrl("");
