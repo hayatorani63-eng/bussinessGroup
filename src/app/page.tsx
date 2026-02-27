@@ -10,15 +10,19 @@ export default function Home() {
   const [newBusinessName, setNewBusinessName] = useState("");
 
   useEffect(() => {
-    setBusinesses(getBusinesses());
+    const fetchBusinesses = async () => {
+      const data = await getBusinesses();
+      setBusinesses(data);
+    };
+    fetchBusinesses();
   }, []);
 
-  const handleAddBusiness = (e: React.FormEvent) => {
+  const handleAddBusiness = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBusinessName.trim()) return;
 
-    const newBiz = addBusiness(newBusinessName);
-    setBusinesses([...businesses, newBiz]);
+    const newBiz = await addBusiness(newBusinessName);
+    setBusinesses(prev => [...prev, newBiz]);
     setNewBusinessName("");
   };
 

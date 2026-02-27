@@ -30,49 +30,54 @@ function ScenarioContent() {
     useEffect(() => {
         if (!id || !scenarioId) return;
 
-        const allScenarios = getScenarios();
-        const current = allScenarios.find((s) => s.id === scenarioId && s.businessId === id);
-        if (current) {
-            setScenario(current);
-            setEditTitle(current.title);
-            setEditContent(current.content);
-            setEditUrl(current.url || "");
-            setEditStatus(current.status || 'writing');
-        }
+        const fetchData = async () => {
+            const allScenarios = await getScenarios(id);
+            const current = allScenarios.find((s) => s.id === scenarioId);
+            if (current) {
+                setScenario(current);
+                setEditTitle(current.title);
+                setEditContent(current.content);
+                setEditUrl(current.url || "");
+                setEditStatus(current.status || 'writing');
+            }
 
-        const allComments = getComments();
-        setComments(allComments.filter(c => c.scenarioId === scenarioId));
+            const allComments = await getComments(scenarioId);
+            setComments(allComments);
+        };
+
+        fetchData();
     }, [id, scenarioId]);
 
-    const handleAddComment = (e: React.FormEvent) => {
+    const handleAddComment = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newComment.trim() || !authorName.trim() || !scenarioId) return;
-        const c = addComment(scenarioId, authorName, newComment);
-        setComments([...comments, c]);
+        const c = await addComment(scenarioId, authorName, newComment);
+        setComments(prev => [...prev, c]);
         setNewComment("");
     };
 
-    const handleUpdateComment = (commentId: string) => {
+    const handleUpdateComment = async (commentId: string) => {
         if (!editCommentText.trim()) return;
-        const updated = updateComment(commentId, editCommentText);
+        const updated = await updateComment(commentId, editCommentText);
         if (updated) {
-            setComments(comments.map(c => c.id === commentId ? updated : c));
+            setComments(prev => prev.map(c => c.id === commentId ? updated : c));
             setEditingCommentId(null);
             setEditCommentText("");
         }
     };
 
-    const handleDeleteComment = (commentId: string) => {
+    const handleDeleteComment = async (commentId: string) => {
         if (confirm("コメントを削除してもよろしいですか？")) {
-            if (deleteComment(commentId)) {
-                setComments(comments.filter(c => c.id !== commentId));
+            const success = await deleteComment(commentId);
+            if (success) {
+                setComments(prev => prev.filter(c => c.id !== commentId));
             }
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!editTitle.trim() || !editContent.trim() || !scenarioId) return;
-        const updated = updateScenario(scenarioId, {
+        const updated = await updateScenario(scenarioId, {
             title: editTitle,
             content: editContent,
             url: editUrl,

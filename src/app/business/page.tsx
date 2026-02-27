@@ -23,38 +23,36 @@ function BusinessContent() {
     useEffect(() => {
         if (!id) return;
 
-        const businesses = getBusinesses();
-        const b = businesses.find((bus) => bus.id === id);
-        setBusiness(b || null);
+        const fetchData = async () => {
+            const businesses = await getBusinesses();
+            const b = businesses.find((bus) => bus.id === id);
+            setBusiness(b || null);
 
-        const allScenarios = getScenarios();
-        const filtered = allScenarios.filter((s) => s.businessId === id);
-        // Sort by date descending
-        const sorted = [...filtered].sort((a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setScenarios(sorted);
+            const filteredScenarios = await getScenarios(id);
+            setScenarios(filteredScenarios);
 
-        setAllComments(getComments());
+            const comments = await getComments();
+            setAllComments(comments);
+        };
+
+        fetchData();
     }, [id]);
 
-    const handleAddScenario = (e: React.FormEvent) => {
+    const handleAddScenario = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newTitle.trim() || !newContent.trim() || !id) return;
-        const s = addScenario(id, newTitle, newContent, newUrl);
-        setScenarios([s, ...scenarios]);
+        const s = await addScenario(id, newTitle, newContent, newUrl);
+        setScenarios(prev => [s, ...prev]);
         setNewTitle("");
         setNewContent("");
         setNewUrl("");
         setIsAdding(false);
     };
 
-    const handleToggleConfirmation = (e: React.MouseEvent | React.ChangeEvent, scenarioId: string) => {
+    const handleToggleConfirmation = async (e: React.MouseEvent | React.ChangeEvent, scenarioId: string, currentStatus: boolean) => {
         e.stopPropagation();
-        const updated = toggleScenarioConfirmation(scenarioId);
-        if (updated) {
-            setScenarios(prev => prev.map(s => s.id === scenarioId ? updated : s));
-        }
+        const newStatus = await toggleScenarioConfirmation(scenarioId, currentStatus);
+        setScenarios(prev => prev.map(s => s.id === scenarioId ? { ...s, confirmed: newStatus } : s));
     };
 
     const filteredScenarios = scenarios.filter(s =>
@@ -149,7 +147,7 @@ function BusinessContent() {
                                             <input
                                                 type="checkbox"
                                                 checked={!!s.confirmed}
-                                                onChange={(e) => handleToggleConfirmation(e, s.id)}
+                                                onChange={(e) => handleToggleConfirmation(e, s.id, !!s.confirmed)}
                                                 style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
                                             />
                                         </div>
@@ -162,12 +160,12 @@ function BusinessContent() {
                                                 >
                                                     <select
                                                         value={s.status || 'writing'}
-                                                        onChange={(e) => {
+                                                        onChange={async (e) => {
                                                             e.stopPropagation();
                                                             const newStatus = e.target.value as any;
-                                                            const updated = updateScenario(s.id, { status: newStatus });
+                                                            const updated = await updateScenario(s.id, { status: newStatus });
                                                             if (updated) {
-                                                                setScenarios(prev => prev.map(item => item.id === s.id ? updated : item));
+                                                                setScenarios(prev => prev.map(item => item.id === s.id ? { ...item, status: newStatus } : item));
                                                             }
                                                         }}
                                                         style={{

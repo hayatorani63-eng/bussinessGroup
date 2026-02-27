@@ -1,128 +1,114 @@
 "use client";
 
+import { db } from "./firebase";
+import {
+    collection,
+    getDocs,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    doc,
+    query,
+    where,
+    orderBy,
+    Timestamp
+} from "firebase/firestore";
 import { Business, Scenario, Comment } from "@/types";
 
-const STORAGE_KEYS = {
-    BUSINESSES: "cosmic_businesses",
-    SCENARIOS: "cosmic_scenarios",
-    COMMENTS: "cosmic_comments",
+export const getBusinesses = async (): Promise<Business[]> => {
+    try {
+        const querySnapshot = await getDocs(collection(db, "businesses"));
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Business));
+    } catch (e) {
+        console.error("Error getting businesses: ", e);
+        return [];
+    }
 };
 
-export const getBusinesses = (): Business[] => {
-    if (typeof window === "undefined") return [];
-    const data = localStorage.getItem(STORAGE_KEYS.BUSINESSES);
-    return data ? JSON.parse(data) : [];
+export const addBusiness = async (name: string): Promise<Business> => {
+    const docRef = await addDoc(collection(db, "businesses"), { name });
+    return { id: docRef.id, name };
 };
 
-export const saveBusinesses = (businesses: Business[]) => {
-    localStorage.setItem(STORAGE_KEYS.BUSINESSES, JSON.stringify(businesses));
+export const getScenarios = async (businessId?: string): Promise<Scenario[]> => {
+    try {
+        const scenariosRef = collection(db, "scenarios");
+        const q = businessId
+            ? query(scenariosRef, where("businessId", "==", businessId), orderBy("createdAt", "desc"))
+            : query(scenariosRef, orderBy("createdAt", "desc"));
+
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Scenario));
+    } catch (e) {
+        console.error("Error getting scenarios: ", e);
+        return [];
+    }
 };
 
-export const getScenarios = (): Scenario[] => {
-    if (typeof window === "undefined") return [];
-    const data = localStorage.getItem(STORAGE_KEYS.SCENARIOS);
-    return data ? JSON.parse(data) : [];
-};
-
-export const saveScenarios = (scenarios: Scenario[]) => {
-    localStorage.setItem(STORAGE_KEYS.SCENARIOS, JSON.stringify(scenarios));
-};
-
-export const addBusiness = (name: string): Business => {
-    const businesses = getBusinesses();
-    const newBusiness: Business = {
-        id: crypto.randomUUID(),
-        name,
-    };
-    saveBusinesses([...businesses, newBusiness]);
-    return newBusiness;
-};
-
-export const addScenario = (businessId: string, title: string, content: string, url?: string): Scenario => {
-    const scenarios = getScenarios();
-    const newScenario: Scenario = {
-        id: crypto.randomUUID(),
+export const addScenario = async (businessId: string, title: string, content: string, url?: string): Promise<Scenario> => {
+    const newScenario = {
         title,
         content,
         businessId,
         createdAt: new Date().toISOString(),
         confirmed: false,
-        url,
-        status: 'writing',
+        url: url || "",
+        status: 'writing' as const,
     };
-    saveScenarios([newScenario, ...scenarios]);
-    return newScenario;
+    const docRef = await addDoc(collection(db, "scenarios"), newScenario);
+    return { id: docRef.id, ...newScenario };
 };
 
-export const toggleScenarioConfirmation = (id: string): Scenario | null => {
-    const scenarios = getScenarios();
-    let updatedScenario: Scenario | null = null;
-    const updatedScenarios = scenarios.map((s) => {
-        if (s.id === id) {
-            updatedScenario = { ...s, confirmed: !s.confirmed };
-            return updatedScenario;
-        }
-        return s;
-    });
-    saveScenarios(updatedScenarios);
-    return updatedScenario;
+export const toggleScenarioConfirmation = async (id: string, currentStatus: boolean): Promise<boolean> => {
+    const docRef = doc(db, "scenarios", id);
+    await updateDoc(docRef, { confirmed: !currentStatus });
+    return !currentStatus;
 };
 
-export const updateScenario = (id: string, updates: Partial<Scenario>): Scenario | null => {
-    const scenarios = getScenarios();
-    let updatedScenario: Scenario | null = null;
-    const updatedScenarios = scenarios.map((s) => {
-        if (s.id === id) {
-            updatedScenario = { ...s, ...updates };
-            return updatedScenario;
-        }
-        return s;
-    });
-    saveScenarios(updatedScenarios);
-    return updatedScenario;
+export const updateScenario = async (id: string, updates: Partial<Scenario>): Promise<Scenario | null> => {
+    const docRef = doc(db, "scenarios", id);
+    await updateDoc(docRef, updates);
+    return { id, ...updates } as Scenario; // Partial return but usually used for state update
 };
 
-export const getComments = (): Comment[] => {
-    if (typeof window === "undefined") return [];
-    const data = localStorage.getItem(STORAGE_KEYS.COMMENTS);
-    return data ? JSON.parse(data) : [];
+export const getComments = async (scenarioId?: string): Promise<Comment[]> => {
+    try {
+        const commentsRef = collection(db, "comments");
+        const q = scenarioId
+            ? query(commentsRef, where("scenarioId", "==", scenarioId), orderBy("createdAt", "asc"))
+            : query(commentsRef, orderBy("createdAt", "asc"));
+
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comment));
+    } catch (e) {
+        console.error("Error getting comments: ", e);
+        return [];
+    }
 };
 
-export const saveComments = (comments: Comment[]) => {
-    localStorage.setItem(STORAGE_KEYS.COMMENTS, JSON.stringify(comments));
-};
-
-export const addComment = (scenarioId: string, author: string, text: string): Comment => {
-    const comments = getComments();
-    const newComment: Comment = {
-        id: crypto.randomUUID(),
+export const addComment = async (scenarioId: string, author: string, text: string): Promise<Comment> => {
+    const newComment = {
         scenarioId,
         author,
         text,
         createdAt: new Date().toISOString(),
     };
-    saveComments([...comments, newComment]);
-    return newComment;
+    const docRef = await addDoc(collection(db, "comments"), newComment);
+    return { id: docRef.id, ...newComment };
 };
 
-export const updateComment = (id: string, text: string): Comment | null => {
-    const comments = getComments();
-    let updatedComment: Comment | null = null;
-    const updatedComments = comments.map((c) => {
-        if (c.id === id) {
-            updatedComment = { ...c, text };
-            return updatedComment;
-        }
-        return c;
-    });
-    saveComments(updatedComments);
-    return updatedComment;
+export const updateComment = async (id: string, text: string): Promise<Comment | null> => {
+    const docRef = doc(db, "comments", id);
+    await updateDoc(docRef, { text });
+    return { id, text } as Comment;
 };
 
-export const deleteComment = (id: string): boolean => {
-    const comments = getComments();
-    const initialLength = comments.length;
-    const filtered = comments.filter((c) => c.id !== id);
-    saveComments(filtered);
-    return filtered.length < initialLength;
+export const deleteComment = async (id: string): Promise<boolean> => {
+    try {
+        await deleteDoc(doc(db, "comments", id));
+        return true;
+    } catch (e) {
+        console.error("Error deleting comment: ", e);
+        return false;
+    }
 };
