@@ -84,10 +84,19 @@ function BusinessContent() {
 
     return (
         <main className="container fade-in">
-            <header className="page-header" style={{ marginBottom: '2rem' }}>
-                <Link href="/" className="muted" style={{ marginBottom: '1rem', display: 'inline-block' }}>← 事業一覧へ戻る</Link>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className="flex-responsive">
-                    <h1 style={{ fontSize: '2rem' }}>{business.name}</h1>
+            <header style={{ marginBottom: '3rem' }}>
+                <Link href="/" className="muted" style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem' }}>
+                    ‹ 事業一覧へ戻る
+                </Link>
+                <div style={{
+                    padding: '2rem 0',
+                    borderBottom: '1px solid var(--border)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline'
+                }} className="flex-responsive">
+                    <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>{business.name}</h1>
+                    <span style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Library</span>
                 </div>
             </header>
 
@@ -99,14 +108,22 @@ function BusinessContent() {
                     </button>
                 </div>
 
-                <div style={{ marginBottom: '2rem' }}>
+                <div style={{ position: 'relative', marginBottom: '2.5rem' }}>
                     <input
                         type="text"
                         placeholder="キーワードで検索 (タイトル・本文)..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '30px', border: '1px solid var(--border)', background: 'var(--surface)' }}
+                        style={{
+                            width: '100%',
+                            padding: '1rem 1rem 1rem 3rem',
+                            borderRadius: '16px',
+                            border: '1px solid var(--border)',
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            fontSize: '1rem'
+                        }}
                     />
+                    <span style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.4 }}>🔍</span>
                 </div>
 
                 {isAdding && (
@@ -191,9 +208,9 @@ function BusinessContent() {
                                                         <option value="published">投稿済み</option>
                                                     </select>
                                                 </div>
-                                                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 500, textDecoration: s.confirmed ? 'line-through' : 'none', letterSpacing: '0.02em' }}>{s.title}</h3>
+                                                <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 600, textDecoration: s.confirmed ? 'line-through' : 'none' }}>{s.title}</h3>
                                             </div>
-                                            <span className="muted" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{formatDate(s.createdAt)}</span>
+                                            <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{formatDate(s.createdAt)}</span>
                                         </div>
                                     </div>
                                     <div className="no-mobile" style={{ textAlign: 'right' }}>
