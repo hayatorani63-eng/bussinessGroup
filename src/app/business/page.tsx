@@ -66,6 +66,7 @@ function BusinessContent() {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'writing': return { bg: '#444', color: '#ccc' };
+            case 'fixing': return { bg: 'rgba(33, 150, 243, 0.2)', color: '#2196f3' };
             case 'filmed': return { bg: 'rgba(255, 171, 0, 0.2)', color: '#ffab00' };
             case 'published': return { bg: 'rgba(0, 200, 83, 0.2)', color: '#00c853' };
             default: return { bg: '#444', color: '#ccc' };
@@ -185,6 +186,7 @@ function BusinessContent() {
                                                         }}
                                                     >
                                                         <option value="writing">執筆中</option>
+                                                        <option value="fixing">修正待ち</option>
                                                         <option value="filmed">撮影可能</option>
                                                         <option value="published">投稿済み</option>
                                                     </select>

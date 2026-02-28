@@ -119,6 +119,7 @@ function ScenarioContent() {
     const getStatusLabel = (status: string) => {
         switch (status) {
             case 'writing': return '執筆中';
+            case 'fixing': return '修正待ち';
             case 'filmed': return '撮影可能';
             case 'published': return '投稿済み';
             default: return '執筆中';
@@ -128,6 +129,7 @@ function ScenarioContent() {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'writing': return { bg: '#444', color: '#ccc' };
+            case 'fixing': return { bg: 'rgba(33, 150, 243, 0.2)', color: '#2196f3' };
             case 'filmed': return { bg: 'rgba(255, 171, 0, 0.2)', color: '#ffab00' };
             case 'published': return { bg: 'rgba(0, 200, 83, 0.2)', color: '#00c853' };
             default: return { bg: '#444', color: '#ccc' };
@@ -218,6 +220,7 @@ function ScenarioContent() {
                         <div style={{ marginBottom: '1rem' }}>
                             <select value={editStatus} onChange={(e) => setEditStatus(e.target.value as any)} style={{ background: 'var(--surface)', color: 'var(--foreground)', border: '1px solid var(--border)', padding: '0.3rem 0.8rem', borderRadius: '4px', fontSize: '0.9rem' }}>
                                 <option value="writing">執筆中</option>
+                                <option value="fixing">修正待ち</option>
                                 <option value="filmed">撮影可能</option>
                                 <option value="published">投稿済み</option>
                             </select>

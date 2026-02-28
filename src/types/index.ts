@@ -11,7 +11,7 @@ export interface Scenario {
   createdAt: string; // ISO string
   confirmed: boolean;
   url?: string;
-  status: 'writing' | 'filmed' | 'published';
+  status: 'writing' | 'fixing' | 'filmed' | 'published';
 }
 
 export interface Comment {
