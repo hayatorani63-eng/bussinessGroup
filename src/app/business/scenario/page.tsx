@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getScenarios, updateScenario, getComments, addComment, updateComment, deleteComment, subscribeToSingleScenario, subscribeToComments } from "@/lib/storage";
@@ -25,6 +25,7 @@ function ScenarioContent() {
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [editCommentText, setEditCommentText] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const SUGGESTED_NAMES = ["元田", "武田"];
 
@@ -114,6 +115,25 @@ function ScenarioContent() {
             setEditStatus(scenario.status || 'writing');
         }
         setIsEditing(false);
+    };
+
+    const insertQuickLabel = (label: string) => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const textToInsert = `${label}：`;
+
+        const newContent = editContent.substring(0, start) + textToInsert + editContent.substring(end);
+        setEditContent(newContent);
+
+        // Reset cursor position and focus back to textarea
+        setTimeout(() => {
+            textarea.focus();
+            const newCursorPos = start + textToInsert.length;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+        }, 0);
     };
 
     const getStatusLabel = (status: string) => {
@@ -293,7 +313,40 @@ function ScenarioContent() {
                         </section>
                     </>
                 ) : (
-                    <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} style={{ width: '100%', minHeight: '70vh', fontSize: '1.15rem', lineHeight: '2.2', background: 'var(--surface)', padding: '2rem', borderRadius: '8px', border: '1px solid var(--border)', resize: 'none', color: 'var(--foreground)', outline: 'none' }} placeholder="本文を入力..." />
+                    <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }} className="flex-responsive">
+                        <textarea
+                            ref={textareaRef}
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            style={{
+                                flex: 1,
+                                minHeight: '70vh',
+                                fontSize: '1.15rem',
+                                lineHeight: '2.2',
+                                background: 'var(--surface)',
+                                padding: '2rem',
+                                borderRadius: '8px',
+                                border: '1px solid var(--border)',
+                                resize: 'none',
+                                color: 'var(--foreground)',
+                                outline: 'none'
+                            }}
+                            placeholder="本文を入力..."
+                        />
+                        <div className="no-print" style={{
+                            position: 'sticky',
+                            top: '2rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.8rem',
+                            minWidth: '100px'
+                        }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>クイック入力</span>
+                            <button onClick={() => insertQuickLabel("ザキ")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>ザキ：</button>
+                            <button onClick={() => insertQuickLabel("男")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>男：</button>
+                            <button onClick={() => insertQuickLabel("女")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>女：</button>
+                        </div>
+                    </div>
                 )}
             </div>
 
