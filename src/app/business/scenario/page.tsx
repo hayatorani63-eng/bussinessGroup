@@ -314,6 +314,19 @@ function ScenarioContent() {
                     </>
                 ) : (
                     <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }} className="flex-responsive">
+                        <div className="no-print" style={{
+                            position: 'sticky',
+                            top: '2rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.8rem',
+                            minWidth: '100px'
+                        }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>クイック入力</span>
+                            <button onClick={() => insertQuickLabel("ザキ")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>ザキ：</button>
+                            <button onClick={() => insertQuickLabel("男")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>男：</button>
+                            <button onClick={() => insertQuickLabel("女")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>女：</button>
+                        </div>
                         <textarea
                             ref={textareaRef}
                             value={editContent}
@@ -333,19 +346,6 @@ function ScenarioContent() {
                             }}
                             placeholder="本文を入力..."
                         />
-                        <div className="no-print" style={{
-                            position: 'sticky',
-                            top: '2rem',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '0.8rem',
-                            minWidth: '100px'
-                        }}>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>クイック入力</span>
-                            <button onClick={() => insertQuickLabel("ザキ")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>ザキ：</button>
-                            <button onClick={() => insertQuickLabel("男")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>男：</button>
-                            <button onClick={() => insertQuickLabel("女")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>女：</button>
-                        </div>
                     </div>
                 )}
             </div>
