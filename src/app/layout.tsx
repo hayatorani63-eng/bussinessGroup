@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "事業別シナリオ管理システム",
-  description: "執筆に集中できるシンプルなシナリオ管理ツール",
+  title: "武田担当事業　シナリオ管理ライブラリ",
+  description: "執筆に集中できるモダンなシナリオ管理ツール",
 };
 
 export default function RootLayout({
