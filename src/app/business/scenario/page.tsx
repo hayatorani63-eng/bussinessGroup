@@ -117,12 +117,14 @@ function ScenarioContent() {
         setIsEditing(false);
     };
 
-    const insertQuickLabel = (label: string) => {
+    const insertQuickLabel = (e: React.MouseEvent, label: string) => {
+        e.preventDefault();
         const textarea = textareaRef.current;
         if (!textarea) return;
 
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
+        const scrollTop = textarea.scrollTop; // Save scroll position
         const textToInsert = `${label}：`;
 
         const newContent = editContent.substring(0, start) + textToInsert + editContent.substring(end);
@@ -130,7 +132,8 @@ function ScenarioContent() {
 
         // Reset cursor position and focus back to textarea
         setTimeout(() => {
-            textarea.focus();
+            textarea.focus({ preventScroll: true });
+            textarea.scrollTop = scrollTop; // Restore scroll position
             const newCursorPos = start + textToInsert.length;
             textarea.setSelectionRange(newCursorPos, newCursorPos);
         }, 0);
@@ -323,9 +326,9 @@ function ScenarioContent() {
                             minWidth: '100px'
                         }}>
                             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>クイック入力</span>
-                            <button onClick={() => insertQuickLabel("ザキ")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>ザキ：</button>
-                            <button onClick={() => insertQuickLabel("男")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>男：</button>
-                            <button onClick={() => insertQuickLabel("女")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>女：</button>
+                            <button type="button" onClick={(e) => insertQuickLabel(e, "ザキ")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>ザキ：</button>
+                            <button type="button" onClick={(e) => insertQuickLabel(e, "男")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>男：</button>
+                            <button type="button" onClick={(e) => insertQuickLabel(e, "女")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>女：</button>
                         </div>
                         <textarea
                             ref={textareaRef}
