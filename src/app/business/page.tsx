@@ -84,29 +84,46 @@ function BusinessContent() {
 
     return (
         <main className="container fade-in">
-            <header className="page-header" style={{ marginBottom: '2rem' }}>
-                <Link href="/" className="muted" style={{ marginBottom: '1rem', display: 'inline-block' }}>← 事業一覧へ戻る</Link>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className="flex-responsive">
-                    <h1 style={{ fontSize: '2rem' }}>{business.name}</h1>
+            <header style={{ marginBottom: '3rem' }}>
+                <Link href="/" className="muted" style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', width: 'fit-content' }}>
+                    <span style={{ fontSize: '1.2rem' }}>‹</span> 事業一覧へ戻る
+                </Link>
+                <div className="card" style={{
+                    padding: '2.5rem',
+                    background: 'linear-gradient(135deg, rgba(157, 92, 252, 0.1), rgba(0, 0, 0, 0))',
+                    border: '1px solid var(--border)',
+                    borderRadius: '24px',
+                    marginBottom: '2rem'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }} className="flex-responsive">
+                        <div>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem', display: 'block' }}>Business Library</span>
+                            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: 0 }}>{business.name}</h1>
+                        </div>
+                        <button onClick={() => setIsAdding(!isAdding)} style={{ padding: '0.6rem 1.5rem', borderRadius: '30px' }}>
+                            {isAdding ? 'キャンセル' : '＋ 新規シナリオ'}
+                        </button>
+                    </div>
                 </div>
             </header>
 
             <section style={{ marginBottom: '3rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }} className="flex-responsive">
-                    <h2 style={{ fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>シナリオ一覧</h2>
-                    <button onClick={() => setIsAdding(!isAdding)} style={{ background: 'transparent', color: 'var(--accent)', border: '1px solid var(--accent)', padding: '0.4rem 1rem', fontSize: '0.8rem' }}>
-                        {isAdding ? 'キャンセル' : '新規作成'}
-                    </button>
-                </div>
-
-                <div style={{ marginBottom: '2rem' }}>
+                <div style={{ position: 'relative', marginBottom: '3rem' }}>
                     <input
                         type="text"
                         placeholder="キーワードで検索 (タイトル・本文)..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '30px', border: '1px solid var(--border)', background: 'var(--surface)' }}
+                        style={{
+                            width: '100%',
+                            padding: '1.2rem 1.5rem 1.2rem 3.5rem',
+                            borderRadius: '40px',
+                            border: '1px solid var(--border)',
+                            background: 'rgba(255,255,255,0.03)',
+                            fontSize: '1rem'
+                        }}
                     />
+                    <span style={{ position: 'absolute', left: '1.5rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
                 </div>
 
                 {isAdding && (
@@ -137,26 +154,32 @@ function BusinessContent() {
                     </div>
                 )}
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                     {filteredScenarios.map((s) => {
                         return (
-                            <Link href={`/business/scenario?id=${id}&scenarioId=${s.id}`} key={s.id} className="card" style={{ display: 'block', textDecoration: 'none', opacity: s.confirmed ? 0.6 : 1, padding: '1.5rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', alignItems: 'flex-start' }}>
-                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                            <Link href={`/business/scenario?id=${id}&scenarioId=${s.id}`} key={s.id} className="card" style={{
+                                display: 'block',
+                                textDecoration: 'none',
+                                opacity: s.confirmed ? 0.7 : 1,
+                                padding: '1.8rem',
+                                position: 'relative'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'flex-start' }}>
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.2rem' }}>
                                         <div
                                             onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
                                             onMouseDown={(e) => { e.stopPropagation(); }}
-                                            style={{ display: 'flex', alignItems: 'center', marginTop: '0.3rem' }}
+                                            style={{ display: 'flex', alignItems: 'center', marginTop: '0.2rem' }}
                                         >
                                             <input
                                                 type="checkbox"
                                                 checked={!!s.confirmed}
                                                 onChange={(e) => handleToggleConfirmation(e, s.id, !!s.confirmed)}
-                                                style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+                                                style={{ width: '1.3rem', height: '1.3rem', cursor: 'pointer', borderRadius: '4px' }}
                                             />
                                         </div>
                                         <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.3rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                                                 <div
                                                     onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
                                                     onMouseDown={(e) => { e.stopPropagation(); }}
@@ -173,16 +196,18 @@ function BusinessContent() {
                                                             }
                                                         }}
                                                         style={{
-                                                            fontSize: '0.75rem',
-                                                            padding: '4px 12px',
-                                                            borderRadius: '6px',
+                                                            fontSize: '0.7rem',
+                                                            padding: '4px 10px',
+                                                            borderRadius: '20px',
                                                             backgroundColor: getStatusColor(s.status || 'writing').bg,
                                                             color: getStatusColor(s.status || 'writing').color,
-                                                            border: '1px solid currentColor',
-                                                            fontWeight: 600,
+                                                            border: 'none',
+                                                            fontWeight: 700,
                                                             cursor: 'pointer',
                                                             outline: 'none',
-                                                            appearance: 'auto',
+                                                            appearance: 'none',
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.05em'
                                                         }}
                                                     >
                                                         <option value="writing">執筆中</option>
@@ -191,21 +216,31 @@ function BusinessContent() {
                                                         <option value="published">投稿済み</option>
                                                     </select>
                                                 </div>
-                                                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 500, textDecoration: s.confirmed ? 'line-through' : 'none', letterSpacing: '0.02em' }}>{s.title}</h3>
+                                                <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 600, textDecoration: s.confirmed ? 'line-through' : 'none', color: s.confirmed ? 'var(--text-muted)' : 'var(--foreground)' }}>{s.title}</h3>
                                             </div>
-                                            <span className="muted" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{formatDate(s.createdAt)}</span>
+                                            <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', display: 'block' }}>{formatDate(s.createdAt)}</span>
                                         </div>
                                     </div>
                                     <div className="no-mobile" style={{ textAlign: 'right' }}>
                                         {s.url && (
-                                            <span style={{ fontSize: '0.7rem', color: 'var(--accent)', opacity: 0.8, display: 'block', marginBottom: '0.2rem' }}>🔗 {new URL(s.url).hostname}</span>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--accent)', opacity: 0.9, display: 'block', marginBottom: '0.4rem', fontWeight: 500 }}>🔗 {new URL(s.url).hostname}</span>
                                         )}
                                         {allComments.filter((c: Comment) => c.scenarioId === s.id).length > 0 && (
-                                            <span style={{ fontSize: '0.7rem', color: '#888' }}>💬 {allComments.filter((c: Comment) => c.scenarioId === s.id).length} comments</span>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '10px' }}>
+                                                💬 {allComments.filter((c: Comment) => c.scenarioId === s.id).length}
+                                            </span>
                                         )}
                                     </div>
                                 </div>
-                                <p className="text-clamp" style={{ whiteSpace: 'pre-wrap', color: '#aaa', textDecoration: s.confirmed ? 'line-through' : 'none', fontSize: '0.95rem', lineHeight: '1.6', margin: '0.5rem 0 0 0' }}>
+                                <p className="text-clamp" style={{
+                                    whiteSpace: 'pre-wrap',
+                                    color: 'var(--text-muted)',
+                                    textDecoration: s.confirmed ? 'line-through' : 'none',
+                                    fontSize: '1rem',
+                                    lineHeight: '1.7',
+                                    margin: '0.8rem 0 0 0',
+                                    paddingLeft: '2.5rem'
+                                }}>
                                     {s.content}
                                 </p>
                             </Link>
