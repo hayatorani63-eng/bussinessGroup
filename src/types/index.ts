@@ -21,3 +21,9 @@ export interface Comment {
   text: string;
   createdAt: string; // ISO string
 }
+
+export interface QuickLabel {
+  id: string;
+  label: string;
+  order: number;
+}

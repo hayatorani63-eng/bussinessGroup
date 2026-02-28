@@ -273,3 +273,39 @@ export const deleteComment = async (id: string): Promise<boolean> => {
         return false;
     }
 };
+
+// Quick Labels
+export const getQuickLabels = async (): Promise<{ id: string, label: string, order: number }[]> => {
+    try {
+        const q = query(collection(db, "quickLabels"), orderBy("order", "asc"));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as { id: string, label: string, order: number }));
+    } catch (e) {
+        console.error("Error getting quick labels:", e);
+        return [];
+    }
+};
+
+export const subscribeToQuickLabels = (callback: (labels: { id: string, label: string, order: number }[]) => void) => {
+    const q = query(collection(db, "quickLabels"), orderBy("order", "asc"));
+    return onSnapshot(q, (snapshot) => {
+        const labels = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as { id: string, label: string, order: number }));
+        callback(labels);
+    }, (error) => {
+        console.error("subscribeToQuickLabels error:", error);
+    });
+};
+
+export const addQuickLabel = async (label: string, order: number): Promise<{ id: string, label: string, order: number }> => {
+    const docRef = await addDoc(collection(db, "quickLabels"), { label, order });
+    return { id: docRef.id, label, order };
+};
+
+export const updateQuickLabel = async (id: string, label: string): Promise<void> => {
+    const docRef = doc(db, "quickLabels", id);
+    await updateDoc(docRef, { label });
+};
+
+export const deleteQuickLabel = async (id: string): Promise<void> => {
+    await deleteDoc(doc(db, "quickLabels", id));
+};

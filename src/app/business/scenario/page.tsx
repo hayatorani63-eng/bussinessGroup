@@ -3,8 +3,8 @@
 import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { getScenarios, updateScenario, getComments, addComment, updateComment, deleteComment, subscribeToSingleScenario, subscribeToComments } from "@/lib/storage";
-import { Scenario, Comment } from "@/types";
+import { getScenarios, updateScenario, getComments, addComment, updateComment, deleteComment, subscribeToSingleScenario, subscribeToComments, subscribeToQuickLabels, addQuickLabel, updateQuickLabel, deleteQuickLabel, getQuickLabels } from "@/lib/storage";
+import { Scenario, Comment, QuickLabel } from "@/types";
 import { formatDate } from "@/lib/utils";
 
 function ScenarioContent() {
@@ -25,6 +25,9 @@ function ScenarioContent() {
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [editCommentText, setEditCommentText] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+    const [quickLabels, setQuickLabels] = useState<QuickLabel[]>([]);
+    const [isManagingLabels, setIsManagingLabels] = useState(false);
+    const [newLinkLabel, setNewLinkLabel] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const SUGGESTED_NAMES = ["元田", "武田"];
@@ -51,9 +54,24 @@ function ScenarioContent() {
             setComments(allComments);
         });
 
+        // Real-time quick labels listener
+        const unsubscribeLabels = subscribeToQuickLabels(async (labels) => {
+            if (labels.length === 0) {
+                // Seed initial labels if empty
+                const initial = ["ザキ", "男", "女"];
+                for (let i = 0; i < initial.length; i++) {
+                    await addQuickLabel(initial[i], i);
+                }
+                // Subscription will trigger again
+            } else {
+                setQuickLabels(labels);
+            }
+        });
+
         return () => {
             unsubscribeScenario();
             unsubscribeComments();
+            unsubscribeLabels();
         };
     }, [id, scenarioId, isEditing]);
 
@@ -137,6 +155,23 @@ function ScenarioContent() {
             const newCursorPos = start + textToInsert.length;
             textarea.setSelectionRange(newCursorPos, newCursorPos);
         }, 0);
+    };
+
+    const handleAddLabel = async () => {
+        if (!newLinkLabel.trim()) return;
+        await addQuickLabel(newLinkLabel.trim(), quickLabels.length);
+        setNewLinkLabel("");
+    };
+
+    const handleUpdateLabel = async (id: string, newText: string) => {
+        if (!newText.trim()) return;
+        await updateQuickLabel(id, newText.trim());
+    };
+
+    const handleDeleteLabel = async (id: string) => {
+        if (confirm("削除してもよろしいですか？")) {
+            await deleteQuickLabel(id);
+        }
     };
 
     const getStatusLabel = (status: string) => {
@@ -323,12 +358,54 @@ function ScenarioContent() {
                             display: 'flex',
                             flexDirection: 'column',
                             gap: '0.8rem',
-                            minWidth: '100px'
+                            minWidth: '120px',
+                            background: 'var(--surface)',
+                            padding: '1rem',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border)'
                         }}>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>クイック入力</span>
-                            <button type="button" onClick={(e) => insertQuickLabel(e, "ザキ")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>ザキ：</button>
-                            <button type="button" onClick={(e) => insertQuickLabel(e, "男")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>男：</button>
-                            <button type="button" onClick={(e) => insertQuickLabel(e, "女")} style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem' }}>女：</button>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>クイック入力</span>
+                                <button type="button" onClick={() => setIsManagingLabels(!isManagingLabels)} style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '0.8rem', padding: 0, opacity: 0.7 }}>
+                                    {isManagingLabels ? '終了' : '編集'}
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                {quickLabels.map(ql => (
+                                    <div key={ql.id} style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                        {isManagingLabels ? (
+                                            <>
+                                                <input
+                                                    type="text"
+                                                    value={ql.label}
+                                                    onChange={(e) => handleUpdateLabel(ql.id, e.target.value)}
+                                                    style={{ padding: '2px 4px', fontSize: '0.8rem', flex: 1, minWidth: '0' }}
+                                                />
+                                                <button type="button" onClick={() => handleDeleteLabel(ql.id)} style={{ color: '#ff4b2b', background: 'transparent', border: 'none', fontSize: '1rem', padding: '0 4px' }}>×</button>
+                                            </>
+                                        ) : (
+                                            <button type="button" onClick={(e) => insertQuickLabel(e, ql.label)} style={{ flex: 1, background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem', textAlign: 'left' }}>
+                                                {ql.label}：
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {isManagingLabels && (
+                                <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="新規追加..."
+                                        value={newLinkLabel}
+                                        onChange={(e) => setNewLinkLabel(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAddLabel()}
+                                        style={{ width: '100%', padding: '4px 8px', fontSize: '0.8rem', marginBottom: '0.4rem' }}
+                                    />
+                                    <button type="button" onClick={handleAddLabel} style={{ width: '100%', padding: '4px', fontSize: '0.75rem', background: 'var(--accent)', color: '#000' }}>追加</button>
+                                </div>
+                            )}
                         </div>
                         <textarea
                             ref={textareaRef}
