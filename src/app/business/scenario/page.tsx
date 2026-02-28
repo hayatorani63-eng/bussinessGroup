@@ -24,6 +24,7 @@ function ScenarioContent() {
 
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [editCommentText, setEditCommentText] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
 
     const SUGGESTED_NAMES = ["元田", "武田"];
 
@@ -76,14 +77,33 @@ function ScenarioContent() {
     };
 
     const handleSave = async () => {
-        if (!editTitle.trim() || !editContent.trim() || !scenarioId) return;
-        await updateScenario(scenarioId, {
-            title: editTitle,
-            content: editContent,
-            url: editUrl,
-            status: editStatus
-        });
-        setIsEditing(false);
+        if (!scenarioId) return;
+
+        // Validation
+        if (!editTitle.trim()) {
+            alert("タイトルを入力してください。");
+            return;
+        }
+        if (!editContent.trim()) {
+            alert("本文を入力してください。");
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            await updateScenario(scenarioId, {
+                title: editTitle,
+                content: editContent,
+                url: editUrl,
+                status: editStatus
+            });
+            setIsEditing(false);
+        } catch (error) {
+            console.error("Failed to save scenario:", error);
+            alert("保存に失敗しました。ネットワーク状況を確認して再度お試しください。");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleCancel = () => {
@@ -140,10 +160,34 @@ function ScenarioContent() {
                             </>
                         ) : (
                             <>
-                                <button onClick={handleSave} style={{ background: 'var(--accent)', color: '#000', padding: '0.5rem 1.5rem', fontSize: '0.9rem', borderRadius: '20px' }}>
-                                    保存
+                                <button
+                                    onClick={handleSave}
+                                    disabled={isSaving}
+                                    style={{
+                                        background: isSaving ? 'var(--border)' : 'var(--accent)',
+                                        color: '#000',
+                                        padding: '0.5rem 1.5rem',
+                                        fontSize: '0.9rem',
+                                        borderRadius: '20px',
+                                        cursor: isSaving ? 'not-allowed' : 'pointer',
+                                        opacity: isSaving ? 0.7 : 1
+                                    }}
+                                >
+                                    {isSaving ? "保存中..." : "保存"}
                                 </button>
-                                <button onClick={handleCancel} style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', padding: '0.5rem 1rem', fontSize: '0.9rem', borderRadius: '20px' }}>
+                                <button
+                                    onClick={handleCancel}
+                                    disabled={isSaving}
+                                    style={{
+                                        background: 'transparent',
+                                        color: 'var(--text-muted)',
+                                        border: '1px solid var(--border)',
+                                        padding: '0.5rem 1rem',
+                                        fontSize: '0.9rem',
+                                        borderRadius: '20px',
+                                        opacity: isSaving ? 0.5 : 1
+                                    }}
+                                >
                                     キャンセル
                                 </button>
                             </>
