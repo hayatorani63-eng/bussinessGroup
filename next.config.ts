@@ -6,7 +6,7 @@ const isProd = process.env.NODE_ENV === 'production' || process.env.GITHUB_ACTIO
 const nextConfig: NextConfig = {
   output: 'export',
   trailingSlash: true,
-  basePath: '',
+  basePath: isProd ? '/bussinessGroup' : '',
   images: {
     unoptimized: true,
   },

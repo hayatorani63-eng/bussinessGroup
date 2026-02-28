@@ -265,29 +265,20 @@ function ScenarioContent() {
                     </div>
                 </div>
                 {!isEditing ? (
-                    <div style={{ paddingBottom: '2rem', borderBottom: '1px solid var(--border)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }} className="no-print">
-                            <span style={{
-                                fontSize: '0.75rem',
-                                padding: '4px 12px',
-                                borderRadius: '20px',
-                                backgroundColor: getStatusColor(scenario.status || 'writing').bg,
-                                color: getStatusColor(scenario.status || 'writing').color,
-                                fontWeight: 700,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em'
-                            }}>
+                    <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }} className="no-print">
+                            <span style={{ fontSize: '0.8rem', padding: '4px 12px', borderRadius: '4px', backgroundColor: getStatusColor(scenario.status || 'writing').bg, color: getStatusColor(scenario.status || 'writing').color, fontWeight: 600 }}>
                                 {getStatusLabel(scenario.status || 'writing')}
                             </span>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '2rem' }} className="flex-responsive">
-                            <h1 style={{ fontSize: '3rem', fontWeight: 800, margin: 0, lineHeight: 1.2 }}>{scenario.title}</h1>
-                            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{formatDate(scenario.createdAt)}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }} className="flex-responsive">
+                            <h1 style={{ fontSize: '2.5rem', marginBottom: 0 }}>{scenario.title}</h1>
+                            <span className="muted no-print" style={{ fontFamily: 'monospace' }}>{formatDate(scenario.createdAt)}</span>
                         </div>
                         {scenario.url && (
-                            <div style={{ marginTop: '1rem' }} className="no-print">
-                                <a href={scenario.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                    🔗 参考リンクを確認
+                            <div style={{ marginTop: '0.5rem' }} className="no-print">
+                                <a href={scenario.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', fontSize: '0.9rem', textDecoration: 'underline' }}>
+                                    {scenario.url}
                                 </a>
                             </div>
                         )}
@@ -328,7 +319,7 @@ function ScenarioContent() {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.5rem' }}>
                                             <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
                                                 <span style={{ fontWeight: 600, color: 'var(--accent)', fontSize: '0.9rem' }}>{c.author}</span>
-                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{formatDate(c.createdAt)}</span>
+                                                <span className="muted" style={{ fontSize: '0.8rem', fontFamily: 'monospace' }}>{formatDate(c.createdAt)}</span>
                                             </div>
                                             <div style={{ display: 'flex', gap: '0.8rem' }} className="no-print">
                                                 {editingCommentId === c.id ? (
