@@ -29,6 +29,7 @@ function ScenarioContent() {
     const [isManagingLabels, setIsManagingLabels] = useState(false);
     const [newLinkLabel, setNewLinkLabel] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const isSeedingRef = useRef(false);
 
     const SUGGESTED_NAMES = ["元田", "武田"];
 
@@ -55,14 +56,23 @@ function ScenarioContent() {
         });
 
         // Real-time quick labels listener
-        const unsubscribeLabels = subscribeToQuickLabels(async (labels) => {
+        const unsubscribeLabels = subscribeToQuickLabels((labels) => {
             if (labels.length === 0) {
-                // Seed initial labels if empty
-                const initial = ["ザキ", "男", "女"];
-                for (let i = 0; i < initial.length; i++) {
-                    await addQuickLabel(initial[i], i);
+                if (!isSeedingRef.current) {
+                    isSeedingRef.current = true;
+                    const seed = async () => {
+                        try {
+                            const initial = ["ザキ", "男", "女"];
+                            for (let i = 0; i < initial.length; i++) {
+                                await addQuickLabel(initial[i], i);
+                            }
+                        } catch (e) {
+                            console.error("Seeding failed:", e);
+                            isSeedingRef.current = false;
+                        }
+                    };
+                    seed();
                 }
-                // Subscription will trigger again
             } else {
                 setQuickLabels(labels);
             }

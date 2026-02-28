@@ -15,7 +15,7 @@ import {
     setDoc,
     writeBatch
 } from "firebase/firestore";
-import { Business, Scenario, Comment } from "@/types";
+import { Business, Scenario, Comment, QuickLabel } from "@/types";
 
 // Migration Helper: Move data from localStorage to Firestore if it exists
 export const migrateLocalStorageToFirestore = async () => {
@@ -275,24 +275,37 @@ export const deleteComment = async (id: string): Promise<boolean> => {
 };
 
 // Quick Labels
-export const getQuickLabels = async (): Promise<{ id: string, label: string, order: number }[]> => {
+export const getQuickLabels = async (): Promise<QuickLabel[]> => {
     try {
         const q = query(collection(db, "quickLabels"), orderBy("order", "asc"));
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as { id: string, label: string, order: number }));
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as QuickLabel));
     } catch (e) {
         console.error("Error getting quick labels:", e);
-        return [];
+        // Fallback: fetch without order
+        try {
+            const querySnapshot = await getDocs(collection(db, "quickLabels"));
+            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as QuickLabel)).sort((a, b) => a.order - b.order);
+        } catch (inner) {
+            return [];
+        }
     }
 };
 
-export const subscribeToQuickLabels = (callback: (labels: { id: string, label: string, order: number }[]) => void) => {
+export const subscribeToQuickLabels = (callback: (labels: QuickLabel[]) => void) => {
     const q = query(collection(db, "quickLabels"), orderBy("order", "asc"));
     return onSnapshot(q, (snapshot) => {
-        const labels = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as { id: string, label: string, order: number }));
+        const labels = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as QuickLabel));
         callback(labels);
     }, (error) => {
         console.error("subscribeToQuickLabels error:", error);
+        // Fallback for missing index
+        if (error.code === 'failed-precondition') {
+            onSnapshot(collection(db, "quickLabels"), (snapshot) => {
+                const labels = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as QuickLabel));
+                callback(labels.sort((a, b) => a.order - b.order));
+            });
+        }
     });
 };
 
