@@ -166,7 +166,7 @@ function ScenarioContent() {
     }
 
     return (
-        <main className="container fade-in">
+        <main className="container fade-in" style={{ maxWidth: '1100px' }}>
             <header style={{ marginBottom: '3rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }} className="no-print">
                     <Link href={`/business?id=${id}`} className="muted">← シナリオ一覧へ戻る</Link>
@@ -255,7 +255,7 @@ function ScenarioContent() {
                 )}
             </header>
 
-            <div className="readable-container">
+            <div className="readable-container" style={{ maxWidth: isEditing ? '1000px' : '720px' }}>
                 {!isEditing ? (
                     <>
                         <article style={{ background: 'transparent', padding: 0, lineHeight: '2.2', letterSpacing: '0.01em' }}>
