@@ -153,7 +153,7 @@ function ScenarioContent() {
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
         const scrollTop = textarea.scrollTop; // Save scroll position
-        const textToInsert = `${label}：`;
+        const textToInsert = label;
 
         const newContent = editContent.substring(0, start) + textToInsert + editContent.substring(end);
         setEditContent(newContent);
@@ -396,7 +396,7 @@ function ScenarioContent() {
                                             </>
                                         ) : (
                                             <button type="button" onClick={(e) => insertQuickLabel(e, ql.label)} style={{ flex: 1, background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.9rem', textAlign: 'left' }}>
-                                                {ql.label}：
+                                                {ql.label}
                                             </button>
                                         )}
                                     </div>
