@@ -61,7 +61,7 @@ export default function Home() {
   return (
     <main className="container fade-in">
       <header style={{ marginBottom: '4rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '2.5rem' }}>事業別シナリオ管理</h1>
+        <h1 style={{ fontSize: '2.5rem' }}>武田担当事業<br />シナリオ管理ライブラリ</h1>
         <p className="muted">選択または新規作成して開始します</p>
       </header>
 

@@ -1,10 +1,12 @@
 :root {
-  --background: #0d0d0d;
-  --foreground: #e0e0e0;
-  --accent: #bb86fc;
-  --surface: #1a1a1a;
-  --border: #333333;
-  --text-muted: #888888;
+  --background: #0a0a0c;
+  --foreground: #f0f0f5;
+  --accent: #9d5cfc;
+  --accent-glow: rgba(157, 92, 252, 0.4);
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.1);
+  --text-muted: #94a3b8;
   --font-serif: 'Georgia', serif;
 }
 
@@ -15,16 +17,19 @@
 }
 
 body {
-  background: var(--background);
+  background: radial-gradient(circle at 50% -20%, #1a1a2e 0%, #0a0a0c 100%);
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+  transition: color 0.2s;
 }
 
 input,
@@ -35,21 +40,35 @@ button {
   color: var(--foreground);
   border: 1px solid var(--border);
   padding: 0.8rem;
-  border-radius: 4px;
+  border-radius: 12px;
   outline: none;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 button {
   cursor: pointer;
   background: var(--accent);
-  color: #000;
+  color: #fff;
   font-weight: 600;
   border: none;
-  transition: opacity 0.2s;
+  box-shadow: 0 4px 12px rgba(157, 92, 252, 0.2);
 }
 
 button:hover {
-  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(157, 92, 252, 0.3);
+  filter: brightness(1.1);
+}
+
+button:active {
+  transform: translateY(0);
 }
 
 /* Utilities */
@@ -63,9 +82,9 @@ button:hover {
 }
 
 .container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 3rem 2rem;
 }
 
 .readable-container {
@@ -75,15 +94,32 @@ button:hover {
 
 .card {
   background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: 16px;
   margin-bottom: 1rem;
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  background: var(--surface-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .muted {
   color: var(--text-muted);
   font-size: 0.9rem;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
+  font-weight: 700;
 }
 
 /* Responsive Layout Helpers */
@@ -106,27 +142,23 @@ button:hover {
   }
 
   .container {
-    padding: 1rem;
+    padding: 1.5rem 1rem;
   }
 
   h1 {
-    font-size: 1.5rem !important;
-  }
-
-  .page-header h1 {
     font-size: 1.8rem !important;
   }
 }
 
 /* Transitions */
 .fade-in {
-  animation: fadeIn 0.5s ease-in;
+  animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
 
   to {
@@ -143,15 +175,15 @@ button:hover {
 @media print {
   @page {
     size: auto;
-    margin: 0mm;
+    margin: 10mm;
   }
 
   body {
     background: white !important;
+    background-image: none !important;
     color: black !important;
     font-size: 11pt;
-    padding: 20mm;
-    /* Add back margins manually as padding */
+    padding: 0;
   }
 
   .no-print {
@@ -169,6 +201,8 @@ button:hover {
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
   }
 
   h1 {
@@ -187,9 +221,9 @@ button:hover {
     line-height: 1.8 !important;
   }
 
-  /* Force background avoidance and color inversion */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    text-shadow: none !important;
   }
 }
