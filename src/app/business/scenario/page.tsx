@@ -196,7 +196,7 @@ function ScenarioContent() {
                 </div>
                 {!isEditing ? (
                     <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }} className="no-print">
                             <span style={{ fontSize: '0.8rem', padding: '4px 12px', borderRadius: '4px', backgroundColor: getStatusColor(scenario.status || 'writing').bg, color: getStatusColor(scenario.status || 'writing').color, fontWeight: 600 }}>
                                 {getStatusLabel(scenario.status || 'writing')}
                             </span>
