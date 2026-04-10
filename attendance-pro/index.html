@@ -505,6 +505,95 @@
       font-family: inherit;
     }
 
+    /* ===== History Log ===== */
+    .history-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .history-section-title svg { width: 16px; height: 16px; color: var(--text-muted); }
+
+    #history-list { display: flex; flex-direction: column; gap: 2px; }
+
+    .history-empty {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      padding: 16px 0;
+    }
+
+    .history-date {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      padding: 12px 0 6px;
+      text-transform: uppercase;
+    }
+    .history-date:first-child { padding-top: 0; }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      transition: background var(--transition);
+    }
+    .history-item:hover { background: rgba(255,255,255,0.04); }
+
+    .history-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .history-icon svg { width: 16px; height: 16px; }
+
+    .item-in .history-icon {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+    }
+    .item-out .history-icon {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-red);
+    }
+
+    .history-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+    }
+    .history-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .history-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .history-time {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+      font-family: 'Inter', sans-serif;
+      flex-shrink: 0;
+    }
+
     /* ===== Footer ===== */
     footer {
       text-align: center;
@@ -630,6 +719,20 @@
         </span>
         <div class="btn-spinner"></div>
       </button>
+    </div>
+
+    <!-- Divider -->
+    <div class="divider">打刻ログ</div>
+
+    <!-- History Card -->
+    <div class="card">
+      <p class="history-section-title">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        打刻履歴
+      </p>
+      <div id="history-list"></div>
     </div>
 
   </main>

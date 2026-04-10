@@ -19,7 +19,8 @@ const App = (() => {
     status: 'out',       // 'in' | 'out'
     userName: '',
     userId: 'user01',    // 研修生ID（固定）
-    clockInTime: null    // ISO string
+    clockInTime: null,   // ISO string
+    history: []          // 打刻ログ [{type, userName, timestamp, duration?}]
   };
 
   // ==========================================
@@ -45,6 +46,7 @@ const App = (() => {
     el.btnReport        = document.getElementById('btn-report');
     el.taskUrl          = document.getElementById('task-url');
     el.toastContainer   = document.getElementById('toast-container');
+    el.historyList      = document.getElementById('history-list');
     el.clockInMeta      = document.getElementById('clock-in-meta');
     el.clockInSince     = document.getElementById('clock-in-since');
     el.liveTime         = document.getElementById('live-time');
@@ -176,6 +178,54 @@ const App = (() => {
     el.btnClockIn.disabled  = !hasName || isIn;
     el.btnClockOut.disabled = !hasName || !isIn;
     el.btnReport.disabled   = !hasName;
+
+    // History
+    renderHistory();
+  };
+
+  // ==========================================
+  //  HISTORY
+  // ==========================================
+  const addHistory = (entry) => {
+    state.history.unshift(entry);        // 最新を先頭に
+    if (state.history.length > 30) state.history.pop(); // 最大30件
+  };
+
+  const renderHistory = () => {
+    if (!el.historyList) return;
+    if (!state.history.length) {
+      el.historyList.innerHTML = `<p class="history-empty">まだ打刻記録がありません</p>`;
+      return;
+    }
+
+    const DAYS = ['日','月','火','水','木','金','土'];
+    let lastDate = null;
+
+    el.historyList.innerHTML = state.history.map(entry => {
+      const d    = new Date(entry.timestamp);
+      const dateLabel = `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}（${DAYS[d.getDay()]}）`;
+      const timeLabel = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      const isIn      = entry.type === 'in';
+      const icon      = isIn
+        ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>`
+        : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>`;
+
+      const showDate = dateLabel !== lastDate;
+      lastDate = dateLabel;
+
+      const dateSep = showDate ? `<div class="history-date">${dateLabel}</div>` : '';
+      const sub = isIn ? '出勤' : `退勤${entry.duration ? ' — ' + entry.duration : ''}`;
+
+      return `${dateSep}
+        <div class="history-item ${isIn ? 'item-in' : 'item-out'}">
+          <div class="history-icon">${icon}</div>
+          <div class="history-body">
+            <span class="history-name">${entry.userName}</span>
+            <span class="history-sub">${sub}</span>
+          </div>
+          <div class="history-time">${timeLabel}</div>
+        </div>`;
+    }).join('');
   };
 
   // ==========================================
@@ -300,8 +350,9 @@ const App = (() => {
           timestamp: timestamp
         });
 
-        state.status     = 'in';
+        state.status      = 'in';
         state.clockInTime = timestamp;
+        addHistory({ type: 'in', userName: state.userName, timestamp });
         saveState();
         toast(`出勤打刻しました ✓ ${formatTime(timestamp)}`, 'success');
 
@@ -333,6 +384,7 @@ const App = (() => {
 
         state.status      = 'out';
         state.clockInTime = null;
+        addHistory({ type: 'out', userName: state.userName, timestamp, duration });
         saveState();
         toast(`退勤打刻しました ✓ 実働 ${duration}`, 'success');
 
