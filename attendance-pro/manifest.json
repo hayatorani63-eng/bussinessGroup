@@ -1,22 +1,26 @@
 {
-  "name": "出退勤管理システム (Attendance Pro)",
-  "short_name": "Attendance",
-  "description": "スマホに特化した簡単打刻アプリ。LINE連携で研修記録を素早く完結します。",
-  "start_url": "./index.html",
+  "name": "Attendance Pro",
+  "short_name": "出退勤",
+  "description": "ワンタップで出退勤打刻。LINEグループへ自動通知。",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#2563eb",
+  "background_color": "#0a0f1e",
+  "theme_color": "#0a0f1e",
   "orientation": "portrait",
+  "lang": "ja",
   "icons": [
     {
-      "src": "https://fonts.gstatic.com/s/i/materialicons/fingerprint/v11/192px.svg",
+      "src": "https://fonts.gstatic.com/s/i/materialicons/schedule/v11/192px.svg",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://fonts.gstatic.com/s/i/materialicons/fingerprint/v11/192px.svg",
+      "src": "https://fonts.gstatic.com/s/i/materialicons/schedule/v11/192px.svg",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }
-  ]
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": []
 }

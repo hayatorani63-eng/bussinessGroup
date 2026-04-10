@@ -21,10 +21,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build with Next.js
-        # ビルドして、かつフォルダがあるか確認します
-        run: |
-          npm run build
-          ls -R out
+        run: npm run build
+      - name: Copy attendance-pro into build output
+        run: cp -r attendance-pro out/attendance-pro
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

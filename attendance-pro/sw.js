@@ -1,45 +1,69 @@
-const CACHE_NAME = 'attendance-pro-v1';
-const urlsToCache = [
+/**
+ * Attendance Pro — Service Worker
+ * Cache-First strategy for offline PWA support
+ */
+
+const CACHE_NAME = 'attendance-pro-v2';
+const STATIC_ASSETS = [
+  './',
   './index.html',
   './app.js',
-  './manifest.json',
-  // TailwindのCDN版もキャッシュ対象に含める場合（任意）
-  'https://cdn.tailwindcss.com'
+  './manifest.json'
 ];
 
+// Install: pre-cache static assets
 self.addEventListener('install', (event) => {
-  // インストール時にキャッシュを生成して静的ファイルを保存
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('[SW] Pre-caching assets');
+      return cache.addAll(STATIC_ASSETS);
+    })
   );
+  self.skipWaiting();
 });
 
-self.addEventListener('fetch', (event) => {
-  // GETリクエストのみキャッシュを参照し、API等のPOSTはそのままネットワークへ送る
-  if (event.request.method !== 'GET') return;
-  
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // キャッシュがあれば返し、なければネットワークへ（オフライン時はindex.htmlを返すフォールバック）
-        return response || fetch(event.request).catch(() => caches.match('./index.html'));
-      })
-  );
-});
-
+// Activate: clean up old caches
 self.addEventListener('activate', (event) => {
-  // 古いバージョンのキャッシュを削除
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => {
+            console.log('[SW] Deleting old cache:', key);
+            return caches.delete(key);
+          })
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+// Fetch: cache-first, then network
+self.addEventListener('fetch', (event) => {
+  // Pass through non-GET and external requests (API calls to GAS)
+  if (event.request.method !== 'GET') return;
+
+  const url = new URL(event.request.url);
+  if (!url.origin.includes(self.location.origin)) return;
+
+  event.respondWith(
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+
+      return fetch(event.request).then(response => {
+        // Cache valid responses
+        if (response && response.status === 200 && response.type === 'basic') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => {
+        // Fallback to index.html for navigation requests
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
+      });
     })
   );
 });
