@@ -19,6 +19,7 @@ function BusinessContent() {
     const [newUrl, setNewUrl] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [isAdding, setIsAdding] = useState(false);
+    const [isLocked, setIsLocked] = useState(true);
 
     useEffect(() => {
         if (!id) return;
@@ -26,6 +27,25 @@ function BusinessContent() {
         const fetchInit = async () => {
             const businesses = await getBusinesses();
             const b = businesses.find((bus) => bus.id === id);
+            
+            if (b?.password) {
+                const unlocked = sessionStorage.getItem(`unlocked_business_${id}`) === 'true';
+                if (!unlocked) {
+                    const pwd = window.prompt("この事業はパスワードで保護されています。\nパスワードを入力してください：");
+                    if (pwd === b.password) {
+                        sessionStorage.setItem(`unlocked_business_${id}`, 'true');
+                        setIsLocked(false);
+                    } else {
+                        alert("パスワードが正しくありません。一覧へ戻ります。");
+                        window.location.href = '/bussinessGroup/';
+                        return;
+                    }
+                } else {
+                    setIsLocked(false);
+                }
+            } else {
+                setIsLocked(false);
+            }
             setBusiness(b || null);
 
             const comments = await getComments();
@@ -73,12 +93,11 @@ function BusinessContent() {
         }
     };
 
-    if (!id || !business) {
+    if (!business || isLocked) {
         return (
-            <div className="container" style={{ textAlign: 'center', paddingTop: '5rem' }}>
-                <p className="muted">事業データを読み込んでいます...</p>
-                <Link href="/" className="muted" style={{ textDecoration: 'underline' }}>トップへ戻る</Link>
-            </div>
+            <main className="container fade-in" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <p className="muted">読み込み中...</p>
+            </main>
         );
     }
 

@@ -8,8 +8,10 @@ import Link from "next/link";
 export default function Home() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [newBusinessName, setNewBusinessName] = useState("");
+  const [newBusinessPassword, setNewBusinessPassword] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [editingPassword, setEditingPassword] = useState("");
 
   useEffect(() => {
     const init = async () => {
@@ -24,9 +26,10 @@ export default function Home() {
     e.preventDefault();
     if (!newBusinessName.trim()) return;
 
-    const newBiz = await addBusiness(newBusinessName);
+    const newBiz = await addBusiness(newBusinessName, newBusinessPassword || undefined);
     setBusinesses(prev => [...prev, newBiz]);
     setNewBusinessName("");
+    setNewBusinessPassword("");
   };
 
   const handleStartEdit = (e: React.MouseEvent, biz: Business) => {
@@ -34,16 +37,33 @@ export default function Home() {
     e.stopPropagation();
     setEditingId(biz.id);
     setEditingName(biz.name);
+    setEditingPassword(biz.password || "");
   };
 
   const handleSaveEdit = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
     if (!editingName.trim()) return;
-    const updated = await updateBusiness(id, editingName);
+    const updated = await updateBusiness(id, editingName, editingPassword || undefined);
     if (updated) {
       setBusinesses(prev => prev.map(b => b.id === id ? updated : b));
       setEditingId(null);
+    }
+  };
+
+  const handleLinkClick = (e: React.MouseEvent, biz: Business) => {
+    if (biz.password) {
+      const isUnlocked = sessionStorage.getItem(`unlocked_business_${biz.id}`) === 'true';
+      if (!isUnlocked) {
+        e.preventDefault();
+        const pwd = window.prompt("この事業はパスワードで保護されています。\nパスワードを入力してください：");
+        if (pwd === biz.password) {
+          sessionStorage.setItem(`unlocked_business_${biz.id}`, 'true');
+          window.location.href = `/bussinessGroup/business?id=${biz.id}`;
+        } else if (pwd !== null) {
+          alert('パスワードが間違っています。');
+        }
+      }
     }
   };
 
@@ -61,7 +81,7 @@ export default function Home() {
   return (
     <main className="container fade-in">
       <header style={{ marginBottom: '4rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '2.5rem' }}>武田担当事業<br />シナリオ管理ライブラリ</h1>
+        <h1 style={{ fontSize: '2.5rem' }}>事業別<br />シナリオ管理ライブラリ</h1>
         <p className="muted">選択または新規作成して開始します</p>
       </header>
 
@@ -69,7 +89,7 @@ export default function Home() {
         <h2 style={{ fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.5rem' }}>事業一覧</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
           {businesses.map((biz) => (
-            <Link href={`/business?id=${biz.id}`} key={biz.id} className="card" style={{
+            <Link href={`/business?id=${biz.id}`} key={biz.id} onClick={(e) => handleLinkClick(e, biz)} className="card" style={{
               display: 'block',
               transition: 'all 0.3s ease',
               position: 'relative',
@@ -86,6 +106,14 @@ export default function Home() {
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
                     autoFocus
+                    placeholder="事業名"
+                    style={{ width: '100%', padding: '0.8rem', borderRadius: '12px' }}
+                  />
+                  <input
+                    type="text"
+                    value={editingPassword}
+                    onChange={(e) => setEditingPassword(e.target.value)}
+                    placeholder="パスワード (任意)"
                     style={{ width: '100%', padding: '0.8rem', borderRadius: '12px' }}
                   />
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -137,6 +165,13 @@ export default function Home() {
             value={newBusinessName}
             onChange={(e) => setNewBusinessName(e.target.value)}
             placeholder="事業名を入力 (例: プロジェクトX)"
+            style={{ flex: 2 }}
+          />
+          <input
+            type="text"
+            value={newBusinessPassword}
+            onChange={(e) => setNewBusinessPassword(e.target.value)}
+            placeholder="パスワード (任意)"
             style={{ flex: 1 }}
           />
           <button type="submit" style={{ padding: '0 2rem' }}>追加</button>

@@ -94,15 +94,19 @@ export const getBusinesses = async (): Promise<Business[]> => {
     }
 };
 
-export const addBusiness = async (name: string): Promise<Business> => {
-    const docRef = await addDoc(collection(db, "businesses"), { name });
-    return { id: docRef.id, name };
+export const addBusiness = async (name: string, password?: string): Promise<Business> => {
+    const data: any = { name };
+    if (password) data.password = password;
+    const docRef = await addDoc(collection(db, "businesses"), data);
+    return { id: docRef.id, ...data };
 };
 
-export const updateBusiness = async (id: string, name: string): Promise<Business | null> => {
+export const updateBusiness = async (id: string, name: string, password?: string): Promise<Business | null> => {
     const docRef = doc(db, "businesses", id);
-    await updateDoc(docRef, { name });
-    return { id, name };
+    const updates: any = { name };
+    if (password !== undefined) updates.password = password; 
+    await updateDoc(docRef, updates);
+    return { id, ...updates };
 };
 
 export const deleteBusiness = async (id: string): Promise<boolean> => {
