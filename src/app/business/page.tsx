@@ -205,7 +205,7 @@ function BusinessContent() {
                                                         <option value="writing">執筆中</option>
                                                         <option value="fixing">修正待ち</option>
                                                         <option value="filmed">撮影可能</option>
-                                                        <option value="published">投稿済み</option>
+                                                        <option value="published">撮影済み</option>
                                                     </select>
                                                 </div>
                                                 <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 600, textDecoration: s.confirmed ? 'line-through' : 'none' }}>{s.title}</h3>

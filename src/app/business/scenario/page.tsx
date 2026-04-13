@@ -189,7 +189,7 @@ function ScenarioContent() {
             case 'writing': return '執筆中';
             case 'fixing': return '修正待ち';
             case 'filmed': return '撮影可能';
-            case 'published': return '投稿済み';
+            case 'published': return '撮影済み';
             default: return '執筆中';
         }
     };
@@ -290,7 +290,7 @@ function ScenarioContent() {
                                 <option value="writing">執筆中</option>
                                 <option value="fixing">修正待ち</option>
                                 <option value="filmed">撮影可能</option>
-                                <option value="published">投稿済み</option>
+                                <option value="published">撮影済み</option>
                             </select>
                         </div>
                         <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} style={{ fontSize: '2.5rem', background: 'transparent', border: 'none', width: '100%', padding: 0, fontWeight: 300, color: 'var(--foreground)', outline: 'none' }} placeholder="タイトルを編集..." autoFocus />
