@@ -18,6 +18,27 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 
+  <!-- 古いSW・キャッシュを強制クリア -->
+  <script>
+    (function() {
+      var CURRENT = 'v4';
+      var key = 'attendance_sw_version';
+      var prev = sessionStorage.getItem(key);
+      sessionStorage.setItem(key, CURRENT);
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          return Promise.all(regs.map(function(r) { return r.unregister(); }));
+        }).then(function() {
+          return caches.keys().then(function(keys) {
+            return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+          });
+        }).then(function() {
+          if (prev && prev !== CURRENT) window.location.reload(true);
+        });
+      }
+    })();
+  </script>
+
   <style>
     /* ===== CSS Custom Properties ===== */
     :root {
