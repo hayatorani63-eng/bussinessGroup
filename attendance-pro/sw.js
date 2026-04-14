@@ -3,7 +3,7 @@
  * Cache-First strategy for offline PWA support
  */
 
-const CACHE_NAME = 'attendance-pro-v2';
+const CACHE_NAME = 'attendance-pro-v3';
 const STATIC_ASSETS = [
   './',
   './index.html',
