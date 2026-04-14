@@ -37,7 +37,7 @@ jobs:
         run: npm run build
 
       - name: Copy attendance-pro into build output
-        run: cp -r attendance-pro out/attendance-pro
+        run: rm -rf out/attendance-pro && cp -r attendance-pro out/attendance-pro
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
